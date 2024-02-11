@@ -1,40 +1,39 @@
 pipeline {
-    agent { label "dev-server"}
-    
+    agent any
     stages {
-        
-        stage("code"){
+        stage("Code"){
             steps{
-                git url: "https://github.com/LondheShubham153/node-todo-cicd.git", branch: "master"
-                echo 'bhaiyya code clone ho gaya'
+                git url: "https://github.com/AkshayDevilliers/node-todo-cicd.git", branch: "master"
+                echo "code clone kiya hmne"
             }
         }
-        stage("build and test"){
-            steps{
-                sh "docker build -t node-app-test-new ."
-                echo 'code build bhi ho gaya'
-            }
-        }
-        stage("scan image"){
-            steps{
-                echo 'image scanning ho gayi'
-            }
-        }
-        stage("push"){
-            steps{
-                withCredentials([usernamePassword(credentialsId:"dockerHub",passwordVariable:"dockerHubPass",usernameVariable:"dockerHubUser")]){
-                sh "docker login -u ${env.dockerHubUser} -p ${env.dockerHubPass}"
-                sh "docker tag node-app-test-new:latest ${env.dockerHubUser}/node-app-test-new:latest"
-                sh "docker push ${env.dockerHubUser}/node-app-test-new:latest"
-                echo 'image push ho gaya'
+            stage("Build & Test") {
+                steps{
+                    sh "docker build -t node-app-test-new:latest ."
+                    echo "build kar diya hmne"
+                   
                 }
             }
-        }
-        stage("deploy"){
-            steps{
-                sh "docker-compose down && docker-compose up -d"
-                echo 'deployment ho gayi'
-            }
-        }
-    }
+                stage("Push to Dockerhub") {
+                    steps{
+                         withCredentials([usernamePassword(credentialsId:"AkshayDocker", passwordVariable:"dockerHubKaPassword", usernameVariable:"merausername")]){
+                        
+            
+                    sh "docker login -u ${env.merausername} -p ${env.dockerHubKaPassword}"
+                    sh "docker tag node-app-test-new:latest ${env.merausername}/node-app-test-new:latest"
+                    sh "docker push  ${env.merausername}/node-app-test-new:latest"
+                    echo "push kiya image hmne"
+                    }
+                        echo "push ho gya"
+                    }
+                }
+                    stage("Deploy") {
+                        steps{
+                            sh "docker-compose down && docker-compose up -d"
+                            echo "deploy ho gya"
+                        }
+                    }
+                
+            
+    }     
 }
